@@ -1,13 +1,9 @@
 name: CI/CD Pipeline da API Flask
 
-# 1. Definição do Gatilho (Trigger)
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+# 1. Definição do Gatilho (Trigger) SIMPLIFICADO
+# Este bloco é o ponto de falha mais comum. 
+# Simplificamos para garantir a sintaxe correta do YAML.
+on: [push, pull_request]
 
 # 2. Definição dos Jobs (Tarefas)
 jobs:
@@ -15,7 +11,7 @@ jobs:
     name: Build, Teste e Qualidade
     runs-on: ubuntu-latest
     
-    # ⚠️ NOVO: DEFINE O DIRETÓRIO DE TRABALHO PARA TODOS OS PASSOS DESTE JOB
+    # DEFINE O DIRETÓRIO DE TRABALHO: CORRETO!
     defaults:
       run:
         working-directory: ./lab_api
@@ -26,14 +22,14 @@ jobs:
       - name: Checkout do Repositório
         uses: actions/checkout@v4
 
-      # (Resto dos Steps...)
+      # Step 2: Configurar Docker Buildx
       - name: Configurar Docker Buildx
         uses: docker/setup-buildx-action@v3
 
       - name: Executar Testes Unitários com Docker Compose
         run: |
           echo "Iniciando a construção da imagem e execução dos testes..."
-          # Este comando agora será executado DENTRO de ./lab_api/
+          # O working-directory garante que ele encontre o docker-compose.yml
           docker-compose run --rm api python test_app.py 
           echo "Testes concluídos."
 
