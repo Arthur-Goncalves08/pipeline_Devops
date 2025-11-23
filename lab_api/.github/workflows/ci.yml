@@ -1,5 +1,5 @@
 name: CI/CD Pipeline da API Flask
-
+# Versão 1.1 - 2025-11-23
 # 1. Definição do Gatilho (Trigger) SIMPLIFICADO
 # Este bloco é o ponto de falha mais comum. 
 # Simplificamos para garantir a sintaxe correta do YAML.
