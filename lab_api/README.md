@@ -40,7 +40,7 @@ A documentação interativa da API (Swagger UI) está disponível em `/swagger`.
 ## ⚙️ Configuração e Execução Local (Docker)
 
 Para executar a API localmente, você precisa ter o **Docker** e o **Docker Compose** instalados.
-
+.
 ### 1. Construir e Iniciar os Serviços
 
 Use o Docker Compose para construir a imagem e iniciar o container da API.
