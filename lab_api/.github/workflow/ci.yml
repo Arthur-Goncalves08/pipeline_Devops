@@ -1,0 +1,51 @@
+name: CI/CD Pipeline da API Flask
+
+# 1. Definição do Gatilho (Trigger)
+# O workflow será executado em dois eventos:
+# - Ao fazer push na branch 'main'.
+# - Ao abrir, atualizar ou fechar um Pull Request na branch 'main'.
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+# 2. Definição dos Jobs (Tarefas)
+jobs:
+  build_and_test:
+    # Nome amigável do Job
+    name: Build, Teste e Qualidade
+    
+    # O executor (Runner) onde as tarefas serão rodadas
+    runs-on: ubuntu-latest
+
+    # 3. Definição dos Steps (Passos)
+    steps:
+      # Step 1: Checkout do código (Ação)
+      # Pega o código do repositório para o runner
+      - name: Checkout do Repositório
+        uses: actions/checkout@v4
+
+      # Step 2: Configurar o Docker Buildx
+      # Recomendado para melhor performance e compatibilidade de builds Docker
+      - name: Configurar Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Step 3: Construir a Imagem e Executar os Testes Unitários
+      # Usaremos 'docker-compose run' para:
+      # 1. 'build: .' - Construir a imagem Docker (conforme seu Dockerfile).
+      # 2. 'run --rm api' - Criar e rodar o serviço 'api' em um container temporário.
+      # 3. O comando 'python test_app.py' executa seus testes.
+      # 4. O container será removido ao final (--rm). Se os testes falharem (exit code != 0), o Job falha.
+      - name: Executar Testes Unitários com Docker Compose
+        run: |
+          echo "Iniciando a construção da imagem e execução dos testes..."
+          docker-compose run --rm api python test_app.py
+          echo "Testes concluídos."
+
+      # Step 4: Limpeza (Opcional, mas boa prática)
+      - name: Limpeza de containers e rede
+        if: always() # Garante que este passo sempre rode, mesmo que os testes falhem
+        run: docker-compose down
