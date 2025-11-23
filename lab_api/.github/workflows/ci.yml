@@ -14,25 +14,29 @@ jobs:
   build_and_test:
     name: Build, Teste e Qualidade
     runs-on: ubuntu-latest
-
+    
+    # ⚠️ NOVO: DEFINE O DIRETÓRIO DE TRABALHO PARA TODOS OS PASSOS DESTE JOB
+    defaults:
+      run:
+        working-directory: ./lab_api
+        
     # 3. Definição dos Steps (Passos)
     steps:
       # Step 1: Checkout do código (Ação)
       - name: Checkout do Repositório
         uses: actions/checkout@v4
 
-      # Step 2: Configurar o Docker Buildx
+      # (Resto dos Steps...)
       - name: Configurar Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # Step 3: Construir a Imagem e Executar os Testes Unitários
       - name: Executar Testes Unitários com Docker Compose
         run: |
           echo "Iniciando a construção da imagem e execução dos testes..."
-          docker-compose run --rm api python test_app.py
+          # Este comando agora será executado DENTRO de ./lab_api/
+          docker-compose run --rm api python test_app.py 
           echo "Testes concluídos."
 
-      # Step 4: Limpeza (Opcional, mas boa prática)
       - name: Limpeza de containers e rede
         if: always()
         run: docker-compose down
