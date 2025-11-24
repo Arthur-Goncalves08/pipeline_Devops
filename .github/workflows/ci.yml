@@ -11,19 +11,14 @@ jobs:
       - name: Checkout do Repositório
         uses: actions/checkout@v4
 
-      # ⚠️ NOVO BLOC0: CONFIGURAÇÃO COMPLETA DO AMBIENTE DOCKER
-      - name: Configurar QEMU
-        uses: docker/setup-qemu-action@v3
-        
-      - name: Configurar Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      # Ação crucial para garantir que o Docker Compose (V2) esteja disponível
-      - name: Verificar e Instalar Docker Compose CLI (se necessário)
+      # ⚠️ NOVO STEP CRUCIAL: Instala o binário docker-compose (v1)
+      - name: Instalar Docker Compose (V1)
         run: |
-          docker compose version || sudo apt-get install -y docker-compose-plugin
+          sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+          docker-compose --version # Verifica a instalação
 
-      # O resto do código (a execução dos testes) permanece o mesmo.
+      # O resto do código permanece o mesmo, usando cd lab_api
       - name: Executar Testes Unitários com Docker Compose
         run: |
           cd lab_api 
