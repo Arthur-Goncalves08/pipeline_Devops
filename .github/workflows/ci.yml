@@ -20,7 +20,7 @@ jobs:
 
     env:
       IMAGE_TAG: ${{ github.sha }}
-      REPO_LOWER: ${{ toLower(github.repository) }}
+      REPO_LOWER: ${{ lower(github.repository) }}
 
     steps:
       - name: Checkout do Repositório
