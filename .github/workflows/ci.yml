@@ -1,23 +1,32 @@
-# ----------------------------------------------------
-# JOB 1: BUILD (Construção e Push da Imagem)
-# ----------------------------------------------------
+name: CI/CD Pipeline da API Flask
+
+on: [push, pull_request]
+
+# Variáveis de ambiente globais
+env:
+  IMAGE_NAME: api-flask-lab 
+  REGISTRY: ghcr.io
+  CONTAINER_PATH: ./lab_api
+
+jobs:
+  # Job 1
   build:
     name: 1. Construir Imagem e Enviar para o GHCR
     runs-on: ubuntu-latest
-    
+
     permissions:
       contents: read
-      packages: write # Necessário para enviar a imagem ao GHCR
-    
-    # ⚠️ NOVO: Crie uma variável de ambiente que converte o nome do repositório para minúsculo
+      packages: write
+
     env:
       IMAGE_TAG: ${{ github.sha }}
-      REPO_LOWER: ${{ toLower(github.repository) }} # Converte 'Arthur-Goncalves08/pipeline_Devops' para minúsculas
+      REPO_LOWER: ${{ toLower(github.repository) }}
 
     steps:
       - name: Checkout do Repositório
         uses: actions/checkout@v4
 
+      # (Resto dos Steps do Build)
       - name: Login no GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -33,7 +42,39 @@
         with:
           context: ${{ env.CONTAINER_PATH }}
           push: true
-          # ⚠️ CORRIGIDO: Usa a nova variável 'REPO_LOWER'
           tags: ${{ env.REGISTRY }}/${{ env.REPO_LOWER }}/${{ env.IMAGE_NAME }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  # Job 2
+  test:
+    name: 2. Executar Testes Unitários
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do Repositório
+        uses: actions/checkout@v4
+
+      - name: Instalar Docker Compose (V1)
+        run: |
+          sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+
+      - name: Puxar e Testar Imagem do GHCR
+        run: |
+          docker pull ${{ env.REGISTRY }}/${{ github.repository }}/${{ env.IMAGE_NAME }}:latest
+          docker run --rm ${{ env.REGISTRY }}/${{ github.repository }}/${{ env.IMAGE_NAME }}:latest python /app/test_app.py
+
+  # Job 3
+  deploy:
+    name: 3. Implantação (Simulada)
+    needs: test
+    runs-on: ubuntu-latest
+
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Simulação de Implantação
+        run: |
+          echo "Completado o DEPLOY!"
