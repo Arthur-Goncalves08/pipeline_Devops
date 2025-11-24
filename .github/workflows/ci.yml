@@ -7,24 +7,24 @@ jobs:
     name: Build, Teste e Qualidade
     runs-on: ubuntu-latest
     
-    # REMOVIDO: O 'defaults: working-directory' foi removido,
-    # pois a pasta de configuração .github não está mais em lab_api.
-    
     steps:
       - name: Checkout do Repositório
         uses: actions/checkout@v4
 
+      # Step 2: Configurar Docker Buildx
       - name: Configurar Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      #  NOVO: Usamos 'cd lab_api' para mudar o diretório de trabalho antes de rodar o Docker Compose.
+      # ⚠️ NOVO STEP: Configurar Docker Compose (Resolve o 'command not found')
+      - name: Configurar Docker Compose
+        uses: docker/setup-qemu-action@v3
+
+      # Agora podemos usar o Docker Compose nos comandos 'run'
       - name: Executar Testes Unitários com Docker Compose
         run: |
-          echo "Iniciando a construção da imagem e execução dos testes..."
           cd lab_api 
           docker-compose run --rm api python test_app.py 
-          echo "Testes concluídos."
-
+          
       - name: Limpeza de containers e rede
         if: always()
         run: |
