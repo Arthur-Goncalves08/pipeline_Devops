@@ -2,30 +2,94 @@ name: CI/CD Pipeline da API Flask
 
 on: [push, pull_request]
 
+# Variáveis de ambiente globais
+env:
+  IMAGE_NAME: api-flask-lab # Nome do seu serviço
+  REGISTRY: ghcr.io
+  CONTAINER_PATH: ./lab_api
+
 jobs:
-  build_and_test:
-    name: Build, Teste e Qualidade
+  # ----------------------------------------------------
+  # JOB 1: BUILD (Construção e Push da Imagem)
+  # ----------------------------------------------------
+  build:
+    name: 1. Construir Imagem e Enviar para o GHCR
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      packages: write # Necessário para enviar a imagem ao GHCR
+
+    steps:
+      - name: Checkout do Repositório
+        uses: actions/checkout@v4
+
+      - name: Login no GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configurar Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build e Push da Imagem
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ env.CONTAINER_PATH }} # Define o diretório onde está o Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ github.repository }}/${{ env.IMAGE_NAME }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ----------------------------------------------------
+  # JOB 2: TESTE (Puxa a Imagem e Roda os Testes)
+  # ----------------------------------------------------
+  test:
+    name: 2. Executar Testes Unitários
+    needs: build # Depende do Job 'build'
     runs-on: ubuntu-latest
     
     steps:
       - name: Checkout do Repositório
         uses: actions/checkout@v4
 
-      # ⚠️ NOVO STEP CRUCIAL: Instala o binário docker-compose (v1)
+      # Novo Step: Instala o binário docker-compose (v1)
       - name: Instalar Docker Compose (V1)
         run: |
           sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
           sudo chmod +x /usr/local/bin/docker-compose
-          docker-compose --version # Verifica a instalação
+          docker-compose --version
 
-      # O resto do código permanece o mesmo, usando cd lab_api
-      - name: Executar Testes Unitários com Docker Compose
+      - name: Puxar e Testar Imagem do GHCR
         run: |
-          cd lab_api 
-          docker-compose run --rm api python test_app.py 
+          # 1. Puxa a imagem do GHCR que foi construída no Job anterior
+          # Você pode usar 'docker-compose run' se ajustar o docker-compose.yml para usar a imagem GHCR.
+          # Simplificando, rodamos os testes diretamente na imagem construída:
           
-      - name: Limpeza de containers e rede
-        if: always()
+          docker pull ${{ env.REGISTRY }}/${{ github.repository }}/${{ env.IMAGE_NAME }}:latest
+          
+          # 2. Roda os testes dentro do novo container
+          # Note: Isso assume que seu Dockerfile copia o test_app.py para dentro da imagem.
+          docker run --rm ${{ env.REGISTRY }}/${{ github.repository }}/${{ env.IMAGE_NAME }}:latest python /app/test_app.py
+
+  # ----------------------------------------------------
+  # JOB 3: DEPLOY (Implantação)
+  # ----------------------------------------------------
+  deploy:
+    name: 3. Implantação (Simulada)
+    needs: test # Depende do Job 'test'
+    runs-on: ubuntu-latest
+    
+    # Adicione uma condição para rodar o deploy apenas no push para main
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Simulação de Implantação
         run: |
-          cd lab_api
-          docker-compose down
+          echo "Aguardando confirmação dos testes (Job 2)..."
+          echo "Iniciando implantação da imagem testada: ${{ env.REGISTRY }}/${{ github.repository }}/${{ env.IMAGE_NAME }}:latest"
+          echo "---"
+          echo "Substitua este step pela sua lógica de implantação no Provedor de Nuvem (AWS, Azure, GCP)."
+          echo "Completado o DEPLOY!"
