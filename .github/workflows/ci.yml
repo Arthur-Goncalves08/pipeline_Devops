@@ -11,15 +11,19 @@ jobs:
       - name: Checkout do Repositório
         uses: actions/checkout@v4
 
-      # Step 2: Configurar Docker Buildx
+      # ⚠️ NOVO BLOC0: CONFIGURAÇÃO COMPLETA DO AMBIENTE DOCKER
+      - name: Configurar QEMU
+        uses: docker/setup-qemu-action@v3
+        
       - name: Configurar Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # ⚠️ NOVO STEP: Configurar Docker Compose (Resolve o 'command not found')
-      - name: Configurar Docker Compose
-        uses: docker/setup-qemu-action@v3
+      # Ação crucial para garantir que o Docker Compose (V2) esteja disponível
+      - name: Verificar e Instalar Docker Compose CLI (se necessário)
+        run: |
+          docker compose version || sudo apt-get install -y docker-compose-plugin
 
-      # Agora podemos usar o Docker Compose nos comandos 'run'
+      # O resto do código (a execução dos testes) permanece o mesmo.
       - name: Executar Testes Unitários com Docker Compose
         run: |
           cd lab_api 
