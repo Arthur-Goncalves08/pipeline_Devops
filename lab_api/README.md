@@ -1,6 +1,6 @@
 # 🚀 API Flask Protegida com JWT e CI/CD via GitHub Actions
 
-Este projeto implementa uma **API RESTful simples** utilizando o framework **Flask** do Python, com proteção de rotas através de **JWT (JSON Web Tokens)**. A aplicação é totalmente conteinerizada com **Docker** e inclui uma pipeline de **Integração Contínua (CI)** robusta, definida com **GitHub Actions**.
+Este projeto implementa uma **API RESTful simples** utilizando o framework **Flask** do Python, com proteção de rotas através de **JWT (JSON Web Tokens)**. A aplicação é totalmente conteinerizada com **Docker** e inclui uma pipeline de **Integração Contínua (CI)** robusta, definida com **GitHub Actions**..
 
 ## ✨ Funcionalidades da API
 
